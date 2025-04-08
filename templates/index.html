@@ -6,6 +6,8 @@
     <title>Interactive Storytelling Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/additional.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/immersive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overrides.css') }}">
 </head>
 <body>
     <div class="container">
@@ -103,34 +105,45 @@
         </div>
 
         <div id="story-content" class="section hidden">
-            <div id="story-container">
-                <div id="story-text"></div>
-                <div id="story-image" class="hidden"></div>
-            </div>
-            
-            <div id="story-choices" class="choices-container">
-                <h3>What will you do next?</h3>
-                <div id="choices-buttons"></div>
-            </div>
-            
-            <div id="story-commands" class="commands-container">
-                <h3>Change the story:</h3>
-                <form id="command-form">
-                    <input type="text" id="command-input" placeholder="e.g., Change the mood to suspenseful">
-                    <button type="submit">Submit</button>
-                </form>
-                <div class="command-examples">
-                    <p>Example commands:</p>
-                    <ul>
-                        <li>"Change the mood to suspenseful"</li>
-                        <li>"Make me the villain"</li>
-                        <li>"Switch to a detective setting"</li>
-                        <li>"Start over with a new genre"</li>
-                    </ul>
+            <div class="immersive-story-container">
+                <div class="story-header">
+                    <h2 class="story-title">Your Adventure</h2>
                 </div>
+                
+                <div class="story-main-content">
+                    <div id="story-image" class="story-banner-image hidden"></div>
+                    
+                    <div id="story-container">
+                        <div id="story-text"></div>
+                    </div>
+                    
+                    <div class="story-interaction">
+                        <div id="story-choices" class="choices-container">
+                            <h3>What will you do next?</h3>
+                            <div id="choices-buttons"></div>
+                        </div>
+                        
+                        <div id="story-commands" class="commands-container">
+                            <h3>Change the story:</h3>
+                            <form id="command-form">
+                                <input type="text" id="command-input" placeholder="e.g., Change the mood to suspenseful">
+                                <button type="submit">Submit</button>
+                            </form>
+                            <div class="command-examples">
+                                <p>Example commands:</p>
+                                <ul>
+                                    <li>"Change the mood to suspenseful"</li>
+                                    <li>"Make me the villain"</li>
+                                    <li>"Switch to a detective setting"</li>
+                                    <li>"Start over with a new genre"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="restart-story" class="restart-btn">Start a New Story</button>
             </div>
-            
-            <button id="restart-story" class="restart-btn">Start a New Story</button>
         </div>
     </div>
 

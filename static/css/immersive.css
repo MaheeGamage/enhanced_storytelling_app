@@ -1,0 +1,385 @@
+/* Immersive Storytelling UI Styles - Applied to Entire Website */
+
+/* Global Styles to remove scrollbars and apply dark theme */
+html, body {
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    background-color: #0d0d0d;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    padding: 0;
+}
+
+/* Override container styles for full-page immersion */
+.container {
+    max-width: 1200px;
+    height: 100%;
+    margin: 0 auto;
+    background-color: #1a1a1a;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    color: #f0f0f0;
+}
+
+/* Main container styles for the immersive experience */
+.immersive-story-container {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    color: #f0f0f0;
+    position: relative;
+    min-height: 80vh; /* Make it take up most of the viewport */
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Small header for story title */
+.story-header {
+    padding: 10px 0;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.story-title {
+    font-size: 1.5rem;
+    color: #f0f0f0;
+    margin: 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+/* Main content area with image, text, and interactions */
+.story-main-content {
+    display: grid;
+    grid-template-columns: 1fr; /* Default for small screens */
+    gap: 20px;
+}
+
+/* Banner image styling - wide but short */
+.story-banner-image {
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 auto 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+
+.story-banner-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Enhanced story text container */
+#story-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+#story-text {
+    line-height: 1.8;
+    font-size: 1.1em;
+    overflow: visible; /* Remove scroller on large screens */
+    max-height: none;
+    background: none;
+    border-left: none;
+    padding: 0;
+    color: #f0f0f0;
+}
+
+#story-text p {
+    margin-bottom: 1em;
+}
+
+/* Group the interaction elements */
+.story-interaction {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Style adjustments for choices and commands containers */
+.choices-container, 
+.commands-container {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 0;
+}
+
+#choices-buttons button {
+    background-color: #1e6091;
+    transition: all 0.3s ease;
+}
+
+#choices-buttons button:hover {
+    background-color: #2980b9;
+    transform: translateY(-3px);
+}
+
+#command-form input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f0f0f0;
+}
+
+#command-form button {
+    background-color: #1e6091;
+}
+
+.command-examples {
+    color: #999;
+}
+
+/* Restart button styling */
+.restart-btn {
+    margin-top: 20px;
+    background-color: rgba(231, 76, 60, 0.8);
+    width: auto;
+    padding: 12px 30px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.restart-btn:hover {
+    background-color: #e74c3c;
+}
+
+/* Media queries for responsive layout */
+@media (min-width: 992px) {
+    /* For large screens, position elements differently */
+    .story-main-content {
+        grid-template-columns: 2fr 1fr; /* 2/3 for story, 1/3 for interactions */
+        grid-template-areas: 
+            "banner banner"
+            "story interaction";
+    }
+    
+    .story-banner-image {
+        grid-area: banner;
+        height: 200px; /* Slightly taller on larger screens */
+    }
+    
+    #story-container {
+        grid-area: story;
+        max-height: 60vh; /* Limit height but still provide good reading space */
+        overflow-y: auto; /* Add scrolling only if content is very long */
+    }
+    
+    .story-interaction {
+        grid-area: interaction;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .container {
+        max-width: 1200px; /* Allow more width on larger screens */
+        height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+/* Animation for new content */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.story-fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Make the image container visible when it has content */
+#story-image.has-image {
+    display: block;
+}
+
+/* Dark theme overrides for the entire website */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+}
+
+header h1 {
+    color: #f0f0f0;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+header p {
+    color: #aaa;
+}
+
+h2, h3, h4, h5 {
+    color: #f0f0f0;
+}
+
+/* Story setup section styling */
+#story-setup {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+/* Form styling for dark theme */
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #e0e0e0;
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    font-size: 16px;
+    color: #f0f0f0;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    border-color: #3498db;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Genre selection styling */
+.genre-option {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.genre-option:hover {
+    border-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.2);
+    transform: translateY(-5px);
+}
+
+.genre-option.selected {
+    border-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.3);
+}
+
+/* Character traits styling */
+.trait-category {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.trait-chip {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+
+.trait-chip:hover {
+    background-color: rgba(52, 152, 219, 0.3);
+}
+
+.trait-chip.selected {
+    background-color: #3498db;
+}
+
+#selected-traits-container {
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* Button styling */
+button {
+    background-color: #3498db;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #2980b9;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+#start-story {
+    background-color: #2ecc71;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 20px auto 0;
+    transition: all 0.3s ease;
+}
+
+#start-story:hover {
+    background-color: #27ae60;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+}
+
+/* Custom scrollbar for elements that need scrolling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Section styling */
+.section {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.section:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
