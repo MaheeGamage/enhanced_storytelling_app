@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedTraitsContainer = document.getElementById('selected-traits-container');
     const characterTextarea = document.getElementById('character');
     const moodInput = document.getElementById('mood');
+    const toggleSpeechBtn = document.getElementById('toggle-speech');
+    const speechStatus = document.getElementById('speech-status');
 
     // Story state
     let currentChoices = [];
@@ -26,11 +28,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedTraits = [];
     let selectedGenre = '';
     const MAX_CYCLES = 5; // Number of choice cycles before ending the story
+    
+    // Speech synthesis state
+    let isSpeechEnabled = true;
+    let currentSpeech = null;
+    let speechQueue = [];
+    let isSpeaking = false;
 
     // Event Listeners
     preferencesForm.addEventListener('submit', initializeStory);
     commandForm.addEventListener('submit', submitCommand);
     restartButton.addEventListener('click', restartStory);
+    toggleSpeechBtn.addEventListener('click', toggleGlobalSpeech);
     
     // Add event listener for command input to detect interruptions
     commandInput.addEventListener('keyup', function(event) {
@@ -236,8 +245,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            // Display story introduction
-            storyText.innerHTML = formatStoryText(data.introduction);
+            // Clear any previous story content
+            storyText.innerHTML = '';
+            
+            // Display story introduction using appendToStory to ensure speech functionality
+            appendToStory(formatStoryText(data.introduction));
             
             // Display story image if available
             if (data.image_url) {
@@ -511,9 +523,37 @@ document.addEventListener('DOMContentLoaded', function() {
      * Append text to the story container
      */
     function appendToStory(html) {
-        const div = document.createElement('div');
-        div.innerHTML = html;
-        storyText.appendChild(div);
+        // Create a section container for this story part
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'story-section';
+        
+        // Add the content
+        sectionDiv.innerHTML = html;
+        
+        // Get clean text for speech
+        const cleanText = sectionDiv.textContent.trim();
+        
+        // Don't add speech button to non-story elements
+        if (!html.includes('class="loading"') && 
+            !html.includes('class="error"') && 
+            !html.includes('class="user-choice"') && 
+            !html.includes('class="user-command"') &&
+            cleanText.length > 0) {
+            
+            // Add speech button
+            const speechBtn = createSectionSpeechButton(sectionDiv, cleanText);
+            sectionDiv.appendChild(speechBtn);
+            
+            // Automatically speak new story sections if speech is enabled
+            if (isSpeechEnabled && !html.includes('class="reflection-question"')) {
+                // Add to speech queue instead of speaking immediately
+                // This ensures sections are spoken in order
+                addToSpeechQueue(cleanText, sectionDiv);
+            }
+        }
+        
+        // Add to story container
+        storyText.appendChild(sectionDiv);
     }
 
     /**
@@ -525,6 +565,163 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(para => para.trim() !== '')
             .map(para => `<p>${para.trim()}</p>`)
             .join('');
+    }
+    
+    /**
+     * Text-to-Speech Functions
+     */
+    
+    // Toggle global speech on/off
+    function toggleGlobalSpeech() {
+        isSpeechEnabled = !isSpeechEnabled;
+        
+        if (isSpeechEnabled) {
+            toggleSpeechBtn.classList.remove('muted');
+            toggleSpeechBtn.querySelector('#speech-icon').textContent = '🔊';
+            speechStatus.textContent = 'Text-to-speech enabled';
+            setTimeout(() => { speechStatus.textContent = ''; }, 2000);
+        } else {
+            toggleSpeechBtn.classList.add('muted');
+            toggleSpeechBtn.querySelector('#speech-icon').textContent = '🔇';
+            speechStatus.textContent = 'Text-to-speech disabled';
+            setTimeout(() => { speechStatus.textContent = ''; }, 2000);
+            
+            // Stop any current speech
+            stopSpeech();
+        }
+    }
+    
+    // Speak text from a section
+    function speakText(text, sectionElement) {
+        if (!isSpeechEnabled) return;
+        
+        // Check browser support
+        if (!window.speechSynthesis) {
+            console.error('Speech synthesis not supported in this browser');
+            speechStatus.textContent = 'Speech not supported in your browser';
+            setTimeout(() => { speechStatus.textContent = ''; }, 3000);
+            return;
+        }
+        
+        // Clean up text for speaking (remove HTML tags)
+        const cleanText = text.replace(/<\/?[^>]+(>|$)/g, '');
+        
+        // Create speech utterance
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        
+        // Set language to English
+        utterance.lang = 'en-US';
+        
+        // Set a slightly slower rate for better comprehension
+        utterance.rate = 0.9;
+        
+        // Stop any current speech
+        stopSpeech();
+        
+        // Update UI
+        if (sectionElement) {
+            const speechBtn = sectionElement.querySelector('.section-speech-btn');
+            if (speechBtn) {
+                speechBtn.classList.add('speaking');
+                speechBtn.textContent = '⏹️';
+            }
+        }
+        
+        toggleSpeechBtn.classList.add('speaking');
+        speechStatus.textContent = 'Speaking...';
+        
+        // Set up event handlers
+        utterance.onend = function() {
+            handleSpeechEnd(sectionElement);
+        };
+        
+        utterance.onerror = function() {
+            handleSpeechEnd(sectionElement);
+            console.error('Speech synthesis error');
+        };
+        
+        // Start speaking
+        currentSpeech = utterance;
+        isSpeaking = true;
+        speechSynthesis.speak(utterance);
+    }
+    
+    // Stop current speech
+    function stopSpeech() {
+        if (isSpeaking) {
+            speechSynthesis.cancel();
+            currentSpeech = null;
+            isSpeaking = false;
+            
+            // Reset UI
+            document.querySelectorAll('.section-speech-btn.speaking').forEach(btn => {
+                btn.classList.remove('speaking');
+                btn.textContent = '🔊';
+            });
+            
+            toggleSpeechBtn.classList.remove('speaking');
+            speechStatus.textContent = '';
+        }
+    }
+    
+    // Handle speech end
+    function handleSpeechEnd(sectionElement) {
+        isSpeaking = false;
+        currentSpeech = null;
+        
+        // Reset UI
+        if (sectionElement) {
+            const speechBtn = sectionElement.querySelector('.section-speech-btn');
+            if (speechBtn) {
+                speechBtn.classList.remove('speaking');
+                speechBtn.textContent = '🔊';
+            }
+        }
+        
+        toggleSpeechBtn.classList.remove('speaking');
+        speechStatus.textContent = '';
+        
+        // Process next item in the speech queue if any
+        processNextSpeechItem();
+    }
+    
+    // Add item to speech queue
+    function addToSpeechQueue(text, sectionElement) {
+        speechQueue.push({ text, sectionElement });
+        
+        // If nothing is currently being spoken, process the queue
+        if (!isSpeaking) {
+            processNextSpeechItem();
+        }
+    }
+    
+    // Process next item in speech queue
+    function processNextSpeechItem() {
+        if (speechQueue.length > 0 && !isSpeaking) {
+            const nextItem = speechQueue.shift();
+            speakText(nextItem.text, nextItem.sectionElement);
+        }
+    }
+    
+    // Create a section speech button
+    function createSectionSpeechButton(sectionElement, text) {
+        const speechBtn = document.createElement('button');
+        speechBtn.className = 'section-speech-btn';
+        speechBtn.textContent = '🔊';
+        speechBtn.title = 'Read this section aloud';
+        speechBtn.setAttribute('aria-label', 'Read section aloud');
+        
+        speechBtn.addEventListener('click', function() {
+            if (isSpeaking && sectionElement.querySelector('.section-speech-btn.speaking')) {
+                // This section is currently being read, so stop it
+                stopSpeech();
+            } else {
+                // Read this section
+                speakText(text, sectionElement);
+            }
+        });
+        
+        return speechBtn;
     }
 
     /**
