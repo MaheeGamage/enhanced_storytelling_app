@@ -265,29 +265,81 @@ class StoryGenerator:
         return content
     
     def _generate_image_prompt(self, genre, character, mood, story_text):
-        """Generate a prompt for image generation based on the story"""
+        """Generate a prompt for image generation based on the story context directly"""
         try:
-            prompt = f"""
-            Based on the following story excerpt:
+            # Extract the first 500 characters to work with
+            text = story_text[:500].lower()
             
-            {story_text[:500]}  # Limit to first 500 chars to avoid token limits
+            # Define scene settings based on genre
+            genre_settings = {
+                "fantasy": "magical realm with glowing crystals and ancient ruins",
+                "sci-fi": "futuristic cityscape with neon lights and advanced technology",
+                "mystery": "foggy street with dim streetlights and shadowy figures",
+                "adventure": "vast landscape with distant mountains and unexplored terrain",
+                "horror": "abandoned building with eerie shadows and decrepit furnishings",
+                "romance": "sunset over a picturesque setting with soft, warm lighting",
+                "western": "dusty frontier town with wooden buildings and desert landscape",
+                "historical": "period-accurate setting with authentic architecture and attire",
+                "thriller": "tense urban environment with stark contrasts and lurking danger",
+                "comedy": "vibrant, slightly exaggerated scene with colorful elements"
+            }
             
-            Create a concise image prompt (max 50 words) that captures a key scene from this {genre} story with a {mood} mood.
-            Focus on the visual elements, setting, and atmosphere. Don't include any instructions about style or quality.
-            Just describe the scene itself in vivid detail.
-            """
+            # Define mood modifiers
+            mood_modifiers = {
+                "happy": "bright, warm colors, golden sunlight",
+                "sad": "muted colors, blue tones, rain or mist",
+                "tense": "sharp shadows, high contrast, red accents",
+                "peaceful": "soft lighting, pastel colors, gentle atmosphere",
+                "mysterious": "deep shadows, fog, limited visibility",
+                "exciting": "dynamic composition, vibrant colors, motion blur",
+                "scary": "dark shadows, desaturated colors, ominous lighting",
+                "romantic": "soft focus, warm glow, intimate setting",
+                "suspenseful": "dramatic lighting, high contrast, confined spaces",
+                "melancholic": "faded colors, autumn tones, nostalgic atmosphere"
+            }
             
-            response = openai.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert at creating concise, vivid image prompts from story excerpts."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=100,
-                temperature=0.7
-            )
+            # Get setting based on genre or default
+            genre = genre.lower()
+            setting = genre_settings.get(genre, "atmospheric scene appropriate for the story")
             
-            image_prompt = response.choices[0].message.content.strip()
+            # Get mood modifier or default
+            mood = mood.lower()
+            mood_effect = mood_modifiers.get(mood, "appropriate atmospheric lighting")
+            
+            # Extract potential scene elements from the story text
+            scene_elements = []
+            
+            # Look for key nouns that might indicate settings or objects
+            potential_settings = ["castle", "forest", "mountain", "city", "village", "spaceship", 
+                                  "sea", "ocean", "river", "house", "room", "cave", "laboratory", 
+                                  "office", "mansion", "dungeon", "palace", "street", "desert", 
+                                  "island", "battlefield", "garden", "temple", "church", "tower"]
+            
+            for place in potential_settings:
+                if place in text:
+                    scene_elements.append(place)
+                    break
+            
+            # Look for time of day
+            time_indicators = ["night", "day", "dawn", "dusk", "morning", "evening", "afternoon", "sunset", "sunrise"]
+            for time in time_indicators:
+                if time in text:
+                    scene_elements.append(time)
+                    break
+            
+            # Look for weather conditions
+            weather_indicators = ["rain", "snow", "storm", "sunny", "cloudy", "fog", "mist", "thunder", "lightning"]
+            for weather in weather_indicators:
+                if weather in text:
+                    scene_elements.append(weather)
+                    break
+            
+            # Build the image prompt
+            if scene_elements:
+                scene_description = ", ".join(scene_elements)
+                image_prompt = f"{scene_description} in a {setting} with {mood_effect}, featuring {character}"
+            else:
+                image_prompt = f"A {character} in a {setting} with {mood_effect}"
             
             # Add style guidance for consistency
             image_prompt += ", digital art, detailed, atmospheric lighting"
