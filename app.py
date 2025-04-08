@@ -19,6 +19,11 @@ def index():
     """Render the main page of the application."""
     return render_template('index.html')
 
+@app.route('/test')
+def test_page():
+    """Render the main page of the application."""
+    return render_template('test.html')
+
 @app.route('/initialize_story', methods=['POST'])
 def initialize_story():
     """Initialize a new story based on user preferences."""
