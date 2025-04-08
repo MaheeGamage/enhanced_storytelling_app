@@ -233,7 +233,10 @@ class StoryGenerator:
     def _extract_choices(self, content):
         """Extract choices from the content"""
         try:
-            # Check if there's a CHOICES section
+            # Default choices (only used if all extraction methods fail)
+            default_choices = ["Continue the adventure", "Take a different path", "Rest and reconsider"]
+            
+            # Check for explicitly formatted choices section
             if "CHOICES:" in content:
                 choices_text = content.split("CHOICES:")[1].strip()
                 # Try to parse as JSON
@@ -252,8 +255,75 @@ class StoryGenerator:
                         except:
                             pass
             
-            # If we couldn't extract choices, generate them
-            return ["Continue the adventure", "Take a different path", "Rest and reconsider"]
+            # If no CHOICES section, look for any JSON array in the content
+            if "[" in content and "]" in content:
+                try:
+                    # Extract potential JSON array
+                    array_text = content[content.rfind("["):content.rfind("]")+1]
+                    choices = json.loads(array_text)
+                    if isinstance(choices, list) and len(choices) > 0:
+                        return choices
+                except:
+                    pass
+            
+            # Look for numbered or bullet point choices
+            choice_patterns = [
+                r'\d+\.\s*(.*?)(?=\d+\.|$)', # Numbered list: 1. Option A 2. Option B
+                r'\*\s*(.*?)(?=\*|$)',       # Asterisk bullets: * Option A * Option B
+                r'[-•]\s*(.*?)(?=[-•]|$)'    # Dash/bullet: - Option A - Option B
+            ]
+            
+            for pattern in choice_patterns:
+                import re
+                matches = re.findall(pattern, content)
+                if matches and len(matches) >= 2:
+                    # Clean up the matches
+                    choices = [match.strip() for match in matches if match.strip()]
+                    if len(choices) > 0:
+                        return choices
+            
+            # When all else fails, generate new choices based on content
+            # instead of using the same default choices every time
+            if len(content) > 100:  # Only if we have enough content to work with
+                try:
+                    # Use the existing generate_choices function but inline
+                    # Create a mini-context with just this content
+                    mini_context = {
+                        'history': [{'content': content}],
+                        'genre': 'story', 
+                        'mood': 'appropriate'
+                    }
+                    
+                    # Call generate_choices directly or use the same openai completion pattern
+                    prompt = f"""
+                    Based on this story content:
+                    {content[:500]}...
+                    
+                    Generate 3 interesting choices for what could happen next.
+                    Return only a JSON array of strings with no other text.
+                    Example: ["Specific choice 1", "Specific choice 2", "Specific choice 3"]
+                    """
+                    
+                    response = openai.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {"role": "system", "content": "You are creating choices for an interactive story."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=150,
+                        temperature=0.7
+                    )
+                    
+                    choices_text = response.choices[0].message.content.strip()
+                    choices = json.loads(choices_text)
+                    if isinstance(choices, list) and len(choices) > 0:
+                        print("Successfully generated dynamic choices from content")
+                        return choices
+                except Exception as e:
+                    print(f"Error generating dynamic choices: {e}")
+            
+            # If still nothing worked, use default choices
+            return default_choices
         except Exception as e:
             print(f"Error extracting choices: {e}")
             return ["Continue the adventure", "Take a different path", "Rest and reconsider"]
