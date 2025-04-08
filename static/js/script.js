@@ -591,34 +591,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Speak text from a section
+    // Speak text from a section using OpenAI TTS
     function speakText(text, sectionElement) {
         if (!isSpeechEnabled) return;
-        
-        // Check browser support
-        if (!window.speechSynthesis) {
-            console.error('Speech synthesis not supported in this browser');
-            speechStatus.textContent = 'Speech not supported in your browser';
-            setTimeout(() => { speechStatus.textContent = ''; }, 3000);
-            return;
-        }
         
         // Clean up text for speaking (remove HTML tags)
         const cleanText = text.replace(/<\/?[^>]+(>|$)/g, '');
         
-        // Create speech utterance
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        
-        // Set language to English
-        utterance.lang = 'en-US';
-        
-        // Set a slightly slower rate for better comprehension
-        utterance.rate = 0.9;
-        
-        // Stop any current speech
-        stopSpeech();
-        
-        // Update UI
+        // Show speaking status
         if (sectionElement) {
             const speechBtn = sectionElement.querySelector('.section-speech-btn');
             if (speechBtn) {
@@ -628,28 +608,77 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         toggleSpeechBtn.classList.add('speaking');
-        speechStatus.textContent = 'Speaking...';
+        speechStatus.textContent = 'Generating speech...';
         
-        // Set up event handlers
-        utterance.onend = function() {
+        // Track the current audio element to allow stopping
+        let audioElement = null;
+        
+        // Stop any current speech
+        stopSpeech();
+        
+        // Send request to our backend TTS API
+        fetch('/text_to_speech', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                text: cleanText,
+                voice: 'nova' // Options: alloy, echo, fable, onyx, nova, shimmer
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Speech generation failed');
+            }
+            return response.blob();
+        })
+        .then(audioBlob => {
+            // Create audio URL and audio element
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioElement = new Audio(audioUrl);
+            
+            // Set up event handlers
+            audioElement.onended = function() {
+                URL.revokeObjectURL(audioUrl); // Clean up
+                handleSpeechEnd(sectionElement);
+            };
+            
+            audioElement.onerror = function() {
+                URL.revokeObjectURL(audioUrl); // Clean up
+                handleSpeechEnd(sectionElement);
+                console.error('Audio playback error');
+            };
+            
+            // Update status
+            speechStatus.textContent = 'Speaking...';
+            
+            // Store reference to current speech
+            currentSpeech = audioElement;
+            isSpeaking = true;
+            
+            // Start playing
+            audioElement.play();
+        })
+        .catch(error => {
+            console.error('TTS Error:', error);
+            speechStatus.textContent = 'Speech generation failed';
             handleSpeechEnd(sectionElement);
-        };
-        
-        utterance.onerror = function() {
-            handleSpeechEnd(sectionElement);
-            console.error('Speech synthesis error');
-        };
-        
-        // Start speaking
-        currentSpeech = utterance;
-        isSpeaking = true;
-        speechSynthesis.speak(utterance);
+            setTimeout(() => {
+                speechStatus.textContent = '';
+            }, 3000);
+        });
     }
     
     // Stop current speech
     function stopSpeech() {
-        if (isSpeaking) {
-            speechSynthesis.cancel();
+        if (isSpeaking && currentSpeech) {
+            // If it's an Audio element (OpenAI TTS)
+            if (currentSpeech instanceof Audio) {
+                currentSpeech.pause();
+                currentSpeech.currentTime = 0;
+            }
+            
             currentSpeech = null;
             isSpeaking = false;
             

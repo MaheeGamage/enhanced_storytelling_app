@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_file
 import os
+import io
 from dotenv import load_dotenv
 import json
 from story_generator import StoryGenerator
+import openai
 
 # Load environment variables
 load_dotenv()
@@ -129,6 +131,45 @@ def process_story_command(context, command):
         new_genre = command.replace("start over with", "").replace("genre", "").strip()
         context['genre'] = new_genre
         context['history'] = []  # Clear history for a fresh start
+
+@app.route('/text_to_speech', methods=['POST'])
+def text_to_speech():
+    """Convert text to speech using OpenAI TTS API"""
+    data = request.json
+    text = data.get('text', '')
+    voice = data.get('voice', 'nova')  # Default voice
+    
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+    
+    try:
+        # Initialize OpenAI client with API key from environment variables
+        client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # Generate speech using OpenAI's TTS API
+        response = client.audio.speech.create(
+            model="tts-1",  # Using the standard model to keep costs down
+            voice=voice,    # Options: alloy, echo, fable, onyx, nova, shimmer
+            input=text
+        )
+        
+        # Get binary audio data
+        audio_data = response.content
+        
+        # Create a BytesIO object from the audio data
+        audio_io = io.BytesIO(audio_data)
+        audio_io.seek(0)
+        
+        # Send the audio file
+        return send_file(
+            audio_io,
+            mimetype='audio/mpeg',
+            as_attachment=True,
+            download_name='speech.mp3'
+        )
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
