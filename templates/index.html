@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Storytelling Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/additional.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Interactive Storytelling Assistant</h1>
+            <p>Embark on a dynamic journey where your choices shape the narrative</p>
+        </header>
+
+        <div id="story-setup" class="section">
+            <h2>Create Your Story</h2>
+            <form id="preferences-form">
+                <div class="form-group">
+                    <label for="genre">What kind of story would you like?</label>
+                    <div class="genre-selection">
+                        <div class="genre-options">
+                            <div class="genre-option" data-genre="fantasy">
+                                <div class="genre-icon">🧙</div>
+                                <div class="genre-name">Fantasy</div>
+                            </div>
+                            <div class="genre-option" data-genre="sci-fi">
+                                <div class="genre-icon">🚀</div>
+                                <div class="genre-name">Sci-Fi</div>
+                            </div>
+                            <div class="genre-option" data-genre="mystery">
+                                <div class="genre-icon">🔍</div>
+                                <div class="genre-name">Mystery</div>
+                            </div>
+                            <div class="genre-option" data-genre="adventure">
+                                <div class="genre-icon">🗺️</div>
+                                <div class="genre-name">Adventure</div>
+                            </div>
+                            <div class="genre-option" data-genre="horror">
+                                <div class="genre-icon">👻</div>
+                                <div class="genre-name">Horror</div>
+                            </div>
+                            <div class="genre-option" data-genre="romance">
+                                <div class="genre-icon">❤️</div>
+                                <div class="genre-name">Romance</div>
+                            </div>
+                        </div>
+                        <div class="custom-genre">
+                            <input type="text" id="genre" name="genre" placeholder="Or type a custom genre" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="character">Tell me about the main character:</label>
+                    <div class="character-builder">
+                        <div class="character-traits">
+                            <h4>Select character traits (or add your own):</h4>
+                            <div class="traits-container">
+                                <div class="trait-category">
+                                    <h5>Personality</h5>
+                                    <div class="trait-options">
+                                        <span class="trait-chip" data-trait="brave">Brave</span>
+                                        <span class="trait-chip" data-trait="intelligent">Intelligent</span>
+                                        <span class="trait-chip" data-trait="mysterious">Mysterious</span>
+                                        <span class="trait-chip" data-trait="humorous">Humorous</span>
+                                        <span class="trait-chip" data-trait="cautious">Cautious</span>
+                                    </div>
+                                </div>
+                                <div class="trait-category">
+                                    <h5>Background</h5>
+                                    <div class="trait-options">
+                                        <span class="trait-chip" data-trait="royal">Royal</span>
+                                        <span class="trait-chip" data-trait="outcast">Outcast</span>
+                                        <span class="trait-chip" data-trait="ordinary">Ordinary</span>
+                                        <span class="trait-chip" data-trait="veteran">Veteran</span>
+                                        <span class="trait-chip" data-trait="foreigner">Foreigner</span>
+                                    </div>
+                                </div>
+                                <div class="trait-category">
+                                    <h5>Skills</h5>
+                                    <div class="trait-options">
+                                        <span class="trait-chip" data-trait="fighter">Fighter</span>
+                                        <span class="trait-chip" data-trait="magic">Magic</span>
+                                        <span class="trait-chip" data-trait="tech-savvy">Tech-savvy</span>
+                                        <span class="trait-chip" data-trait="persuasive">Persuasive</span>
+                                        <span class="trait-chip" data-trait="stealthy">Stealthy</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="selected-traits">
+                            <h4>Selected traits:</h4>
+                            <div id="selected-traits-container"></div>
+                        </div>
+                        <textarea id="character" name="character" placeholder="Add more details about your character here..." required></textarea>
+                    </div>
+                </div>
+                <!-- Mood field removed as it will be inferred -->
+                <input type="hidden" id="mood" name="mood" value="">
+                <button type="submit" id="start-story">Begin Your Adventure</button>
+            </form>
+        </div>
+
+        <div id="story-content" class="section hidden">
+            <div id="story-container">
+                <div id="story-text"></div>
+                <div id="story-image" class="hidden"></div>
+            </div>
+            
+            <div id="story-choices" class="choices-container">
+                <h3>What will you do next?</h3>
+                <div id="choices-buttons"></div>
+            </div>
+            
+            <div id="story-commands" class="commands-container">
+                <h3>Change the story:</h3>
+                <form id="command-form">
+                    <input type="text" id="command-input" placeholder="e.g., Change the mood to suspenseful">
+                    <button type="submit">Submit</button>
+                </form>
+                <div class="command-examples">
+                    <p>Example commands:</p>
+                    <ul>
+                        <li>"Change the mood to suspenseful"</li>
+                        <li>"Make me the villain"</li>
+                        <li>"Switch to a detective setting"</li>
+                        <li>"Start over with a new genre"</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button id="restart-story" class="restart-btn">Start a New Story</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
