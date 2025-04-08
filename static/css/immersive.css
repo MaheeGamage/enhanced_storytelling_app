@@ -169,7 +169,7 @@ body {
     .story-main-content {
         grid-template-columns: 2fr 1fr; /* 2/3 for story, 1/3 for interactions */
         grid-template-areas: 
-            "banner banner"
+            "banner interaction"
             "story interaction";
     }
     
@@ -180,7 +180,7 @@ body {
     
     #story-container {
         grid-area: story;
-        max-height: 60vh; /* Limit height but still provide good reading space */
+        max-height: 30vh; /* Limit height but still provide good reading space */
         overflow-y: auto; /* Add scrolling only if content is very long */
     }
     
