@@ -37,7 +37,8 @@ class StoryGenerator:
             Format the choices as a JSON array at the end of your response, like this:
             CHOICES: ["First option", "Second option", "Third option"]
             
-            Make sure the choices are diverse and would lead to different narrative paths.
+            IMPORTANT: Keep each choice very short (2-5 words only) but still meaningful and diverse.
+            Example of good choices: ["Enter the cave", "Follow the river", "Return home"]
             """
             
             response = openai.chat.completions.create(
@@ -79,7 +80,9 @@ class StoryGenerator:
             
             Generate 3 interesting choices for what could happen next in the story. 
             Format them as a JSON array of strings, each representing a possible choice.
-            Example: ["Investigate the strange noise", "Return to the village", "Follow the glowing trail"]
+            
+            IMPORTANT: Keep each choice very short (2-5 words only) but still meaningful and diverse.
+            Example of good choices: ["Enter the cave", "Follow the river", "Return home"]
             
             Make sure the choices are diverse and would lead to different narrative paths.
             """
@@ -130,6 +133,9 @@ class StoryGenerator:
             After your continuation, provide 3 possible choices for what could happen next in the story.
             Format the choices as a JSON array at the end of your response, like this:
             CHOICES: ["First option", "Second option", "Third option"]
+            
+            IMPORTANT: Keep each choice very short (2-5 words only) but still meaningful and diverse.
+            Example of good choices: ["Enter the cave", "Follow the river", "Return home"]
             
             Make sure the choices are diverse and would lead to different narrative paths.
             """
